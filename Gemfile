@@ -1,4 +1,3 @@
-ruby '2.3.7'
 source 'https://rubygems.org'
 
 group :development, :production, :test do
