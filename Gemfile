@@ -22,4 +22,5 @@ group :development, :test do
   gem 'bcrypt'                 , '3.1.11'
   gem 'rspec-json_expectations', '2.1.0'
   gem 'rubocop'
+  gem 'faker'
 end

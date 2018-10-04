@@ -16,5 +16,6 @@ errors:
       unknown: ''
     message:
       require: ''
-    receiver:
-      required: ''
+    session_id:
+      required:
+      unknown:

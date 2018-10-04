@@ -20,8 +20,10 @@ module Controllers
       # A message can be sent to either : one user, several users, and all the users of a single campaign.
       check_either_presence 'account_id', 'campaign_id', 'account_ids', route: 'messages', key: 'any_id'
 
+      session = check_session('messages')
+
       begin
-        Services::Repartitor.instance.forward_message(params)
+        Services::Repartitor.instance.forward_message(session, params)
         halt 200, {message: 'transmitted'}.to_json
       rescue Services::Exceptions::ItemNotFound => exception
         custom_error 404, exception.to_s

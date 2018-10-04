@@ -8,6 +8,8 @@ service = Arkaan::Utils::MicroService.instance
   .from_location(__FILE__)
   .in_standard_mode
 
+puts Arkaan::Utils::MicroService.instance.instance.url
+
 map(service.path) { run Controllers::Repartitor.new }
 
 at_exit { Arkaan::Utils::MicroService.instance.deactivate! }
