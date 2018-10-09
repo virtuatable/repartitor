@@ -41,7 +41,7 @@ module Services
       process = fork {
         Arkaan::Factories::Gateways.random('messages').post(
           session: session,
-          url: '/repartitor/messages',
+          url: '/websockets/messages',
           params: {
             session_ids: session_ids,
             instance_id: instance_id,
