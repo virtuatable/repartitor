@@ -10,4 +10,7 @@ service = Arkaan::Utils::MicroService.instance
 
 map(service.path) { run Controllers::Repartitor.new }
 
-at_exit { Arkaan::Utils::MicroService.instance.deactivate! }
+at_exit {
+  Logger.new(STDOUT).info('DESACTIVATION DE L\'INSTANCE')
+  Arkaan::Utils::MicroService.instance.deactivate!
+}
