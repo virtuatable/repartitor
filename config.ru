@@ -10,7 +10,5 @@ service = Arkaan::Utils::MicroService.instance
 
 map(service.path) { run Controllers::Repartitor.new }
 
-at_exit {
-  Logger.new(STDOUT).info('DESACTIVATION DE L\'INSTANCE')
-  Arkaan::Utils::MicroService.instance.deactivate!
-}
+# Since the service always goes off for no reason, commented for the times being.
+# at_exit { Arkaan::Utils::MicroService.instance.deactivate! }

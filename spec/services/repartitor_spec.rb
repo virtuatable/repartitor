@@ -11,12 +11,25 @@ RSpec.describe Services::Repartitor do
   let!(:instance) { create(:instance, service: service) }
   let!(:session) { create(:session, account: account, websocket_id: instance.id.to_s) }
   let!(:campaign) { create(:campaign, creator: account) }
+  let!(:decorator) { Arkaan::Decorators::Gateway.new('messages', gateway) }
+
+  before :each do
+    allow(decorator).to receive(:post).and_return(true)
+    allow(Arkaan::Factories::Gateways).to receive(:random).with('messages').and_return(decorator)
+  end
 
   describe :forward_message do
     describe 'with an account' do
       it 'Receives the correct call to the specific forward method' do
-        expect(Services::Repartitor.instance).to receive(:send_to_account).with(
-          session, account.id.to_s, 'test', {'key' => 1}
+        expect(decorator).to receive(:post).with(
+          session: session,
+          url: '/websockets/messages',
+          params: {
+            session_ids: [session.id.to_s],
+            instance_id: instance.id.to_s,
+            message: 'test',
+            data: {'key' => 1}
+          }
         )
         Services::Repartitor.instance.forward_message(session, {
           'session_id' => session.id.to_s,
@@ -28,8 +41,15 @@ RSpec.describe Services::Repartitor do
     end
     describe 'with several accounts' do
       it 'Receives the correct call to the specific forward method' do
-        expect(Services::Repartitor.instance).to receive(:send_to_accounts).with(
-          session, [account.id.to_s], 'test', {'key' => 1}
+        expect(decorator).to receive(:post).with(
+          session: session,
+          url: '/websockets/messages',
+          params: {
+            session_ids: [session.id.to_s],
+            instance_id: instance.id.to_s,
+            message: 'test',
+            data: {'key' => 1}
+          }
         )
         Services::Repartitor.instance.forward_message(session, {
           'session_id' => session.id.to_s,
@@ -42,8 +62,15 @@ RSpec.describe Services::Repartitor do
     describe 'with a campaign' do
       let!(:campaign) { create(:campaign, creator: account) }
       it 'Receives the correct call to the specific forward method' do
-        expect(Services::Repartitor.instance).to receive(:send_to_campaign).with(
-          session, campaign.id.to_s, 'test', {'key' => 1}
+        expect(decorator).to receive(:post).with(
+          session: session,
+          url: '/websockets/messages',
+          params: {
+            session_ids: [session.id.to_s],
+            instance_id: instance.id.to_s,
+            message: 'test',
+            data: {'key' => 1}
+          }
         )
         Services::Repartitor.instance.forward_message(session, {
           'session_id' => session.id.to_s,
