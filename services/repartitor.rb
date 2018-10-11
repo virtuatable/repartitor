@@ -13,6 +13,8 @@ module Services
         send_to_accounts(session, params['account_ids'], params['message'], params['data'] || {})
       elsif !params['campaign_id'].nil?
         send_to_campaign(session, params['campaign_id'], params['message'], params['data'] || {})
+      elsif !params['username'].nil?
+        send_to_username(session, params['username'], params['message'], params['data'])
       end
     end
 
@@ -83,6 +85,12 @@ module Services
       end
       sessions = Arkaan::Authentication::Session.where(:account_id.in => account_ids)
       send_to_sessions(session, sessions, message, data)
+    end
+
+    def send_to_username(session, username, message, data)
+      account = Arkaan::Account.where(username: username).first
+      raise Services::Exceptions::ItemNotFound.new('username') if account.nil?
+      send_to_sessions(session, account.sessions, message, data)
     end
   end
 end
