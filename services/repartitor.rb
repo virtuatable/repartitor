@@ -48,7 +48,7 @@ module Services
     # @param message [String] the action of the message.
     # @param data [Hash] a hash of additional data to send with the message.
     def send_to_websocket(session, instance_id, session_ids, message, data)
-      Arkaan::Factories::Gateways.random('messages').post(
+      parameters = {
         session: session,
         url: '/websockets/messages',
         params: {
@@ -57,7 +57,9 @@ module Services
           message: message,
           data: data
         }
-      )
+      }
+      logger.info(parameters.to_json)
+      Arkaan::Factories::Gateways.random('messages').post(parameters)
     end
 
     # Sends a message to all the connected sessions of a user so that he sees it on all its terminals.
