@@ -4,6 +4,12 @@ module Services
   class Repartitor
     include Singleton
 
+    attr_accessor :logger
+
+    def initialize
+      @logger = Logger.new(STDOUT)
+    end
+
     # Forwards the message by finding if it's for a campaign, a user, or several users.
     # @param params [Hash] an object containing all the needed properties for the message to be forwarded.
     def forward_message(session, params)
