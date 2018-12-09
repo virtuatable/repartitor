@@ -33,6 +33,17 @@ describe Controllers::Repartitor do
 
   describe 'POST /messages' do
     describe 'Nominal case' do
+      describe 'with a username' do
+        before do
+          post '/messages', {token: 'test_token', app_key: 'other_key', username: 'Babausse', message: 'test', session_id: session.token}
+        end
+        it 'Returns a OK (200) status' do
+          expect(last_response.status).to be 200
+        end
+        it 'Returns the correct body' do
+          expect(last_response.body).to include_json({message: 'transmitted'})
+        end
+      end
       describe 'with an account' do
         before do
           post '/messages', {token: 'test_token', app_key: 'other_key', account_id: account.id.to_s, message: 'test', session_id: session.token}.to_json
@@ -162,6 +173,21 @@ describe Controllers::Repartitor do
           expect(last_response.body).to include_json({
             status: 404,
             field: 'campaign_id',
+            error: 'unknown'
+          })
+        end
+      end
+      describe 'campaign not found' do
+        before do
+          post '/messages', {token: 'test_token', app_key: 'other_key', message: 'test_message', username: 'any username', session_id: session.token}.to_json
+        end
+        it 'Returns a Not Found (404) status' do
+          expect(last_response.status).to be 404
+        end
+        it 'Returns the correct body' do
+          expect(last_response.body).to include_json({
+            status: 404,
+            field: 'username',
             error: 'unknown'
           })
         end
