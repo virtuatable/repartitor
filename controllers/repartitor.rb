@@ -7,6 +7,10 @@ module Controllers
 
     load_errors_from __FILE__
 
+    configure do
+      set :logger, Logger.new(STDOUT)
+    end
+
     declare_route 'get', '/url' do
       add_body_to_params
       service = Arkaan::Monitoring::Service.where(key: 'websockets').first
@@ -24,6 +28,9 @@ module Controllers
 
       session = check_session('messages')
 
+      logger.info("Arrivée dans l'envoi de message pour les paramètres :")
+      logger.info(params.to_json)
+      
       begin
         Services::Repartitor.instance.forward_message(session, params)
         halt 200, {message: 'transmitted'}.to_json

@@ -5,12 +5,15 @@ RSpec.describe Services::Repartitor do
   end
 
   let!(:account) { create(:account) }
+  let!(:other_account) { create(:account, email: 'other@account.com', username: 'other account') }
   let!(:application) { create(:application, creator: account) }
   let!(:gateway) { create(:gateway) }
   let!(:service) { create(:ws_service) }
   let!(:instance) { create(:instance, service: service) }
   let!(:session) { create(:session, account: account, websocket_id: instance.id.to_s) }
+  let!(:other_session) { create(:session, account: other_account, websocket_id: instance.id.to_s) }
   let!(:campaign) { create(:campaign, creator: account) }
+  let!(:invitation) { create(:invitation, account: other_account, campaign: campaign, enum_status: :accepted)}
   let!(:decorator) { Arkaan::Decorators::Gateway.new('messages', gateway) }
 
   before :each do
@@ -66,7 +69,7 @@ RSpec.describe Services::Repartitor do
           session: session,
           url: '/websockets/messages',
           params: {
-            session_ids: [session.id.to_s],
+            session_ids: [other_session.id.to_s],
             instance_id: instance.id.to_s,
             message: 'test',
             data: {'key' => 1}
@@ -103,7 +106,7 @@ RSpec.describe Services::Repartitor do
   describe :send_to_campaign do
     it 'makes the correct call to the send_to_sessions method' do
       expect(Services::Repartitor.instance).to receive(:send_to_sessions).with(
-        session, [session], 'test', {'key' => 1}
+        session, [other_session], 'test', {'key' => 1}
       )
       Services::Repartitor.instance.send_to_campaign(session, campaign.id.to_s, 'test', {'key' => 1})
     end
