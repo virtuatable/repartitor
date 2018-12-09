@@ -32,6 +32,7 @@ module Services
     def send_to_sessions(session, sessions, message, data)
       service = Arkaan::Monitoring::Service.where(key: 'websockets').first
       if !service.nil?
+        logger.info("Les sessions en mode brut sont : #{sessions.pluck(:_id).map(&:to_s).join(', ')}")
         grouped = sessions.group_by { |session| session.websocket_id }
         grouped.each do |websocket_id, sessions|
           logger.info("Envoi au websocket #{websocket_id} des notifications pour #{sessions.pluck(:_id)}")
