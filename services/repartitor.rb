@@ -4,6 +4,12 @@ module Services
   class Repartitor
     include Singleton
 
+    attr_accessor :logger
+
+    def initialize
+      @logger = Logger.new(STDOUT)
+    end
+
     # Forwards the message by finding if it's for a campaign, a user, or several users.
     # @param params [Hash] an object containing all the needed properties for the message to be forwarded.
     def forward_message(session, params)
@@ -26,8 +32,10 @@ module Services
     def send_to_sessions(session, sessions, message, data)
       service = Arkaan::Monitoring::Service.where(key: 'websockets').first
       if !service.nil?
+        logger.info("Les sessions en mode brut sont : #{sessions.pluck(:_id).map(&:to_s).join(', ')}")
         grouped = sessions.group_by { |session| session.websocket_id }
         grouped.each do |websocket_id, sessions|
+          logger.info("Envoi au websocket #{websocket_id} des notifications pour #{sessions.pluck(:_id)}")
           send_to_websocket(session, websocket_id, sessions.pluck(:_id).map(&:to_s), message, data)
         end
       end
@@ -40,7 +48,7 @@ module Services
     # @param message [String] the action of the message.
     # @param data [Hash] a hash of additional data to send with the message.
     def send_to_websocket(session, instance_id, session_ids, message, data)
-      Arkaan::Factories::Gateways.random('messages').post(
+      parameters = {
         session: session,
         url: '/websockets/messages',
         params: {
@@ -49,7 +57,9 @@ module Services
           message: message,
           data: data
         }
-      )
+      }
+      logger.info(parameters.to_json)
+      Arkaan::Factories::Gateways.random('messages').post(parameters)
     end
 
     # Sends a message to all the connected sessions of a user so that he sees it on all its terminals.
@@ -69,8 +79,9 @@ module Services
     def send_to_campaign(session, campaign_id, message, data)
       campaign = Arkaan::Campaign.where(_id: campaign_id).first
       raise Services::Exceptions::ItemNotFound.new('campaign_id') if campaign.nil?
+      logger.info("Envoi d'un message à tous les compte de la campagne #{campaign.title}")
       invitations = campaign.invitations.where(:enum_status.in => ['creator', 'accepted'])
-      sessions = Arkaan::Authentication::Session.where(:account_id.in => campaign.invitations.pluck(:account_id))
+      sessions = Arkaan::Authentication::Session.where(:account_id.in => campaign.invitations.pluck(:account_id), :id.ne => session.id)
       send_to_sessions(session, sessions, message, data)
     end
 
