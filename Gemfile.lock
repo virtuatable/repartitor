@@ -1,3 +1,16 @@
+PATH
+  remote: ../arkaan
+  specs:
+    arkaan (1.3.11)
+      activemodel (= 5.1.4)
+      activesupport (= 5.1.4)
+      bcrypt (= 3.1.11)
+      faraday (= 0.15.2)
+      mongoid (= 7.0.1)
+      platform-api (= 2.1.0)
+      sinatra (= 2.0.1)
+      sinatra-contrib (= 2.0.1)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -27,15 +40,6 @@ GEM
       tzinfo (~> 1.1)
     addressable (2.5.2)
       public_suffix (>= 2.0.2, < 4.0)
-    arkaan (1.2.6)
-      activemodel (= 5.1.4)
-      activesupport (= 5.1.4)
-      bcrypt (= 3.1.11)
-      faraday (= 0.15.2)
-      mongoid (= 7.0.1)
-      platform-api (= 2.1.0)
-      sinatra (= 2.0.1)
-      sinatra-contrib (= 2.0.1)
     ast (2.4.0)
     backports (3.11.4)
     bcrypt (3.1.11)
@@ -176,7 +180,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  arkaan (= 1.2.6)
+  arkaan (= 1.3.11)!
   bcrypt (= 3.1.11)
   database_cleaner (= 1.6.1)
   draper (= 3.0.1)
@@ -194,4 +198,4 @@ DEPENDENCIES
   sinatra-websocket (= 0.3.1)
 
 BUNDLED WITH
-   1.16.5
+   1.17.2

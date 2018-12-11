@@ -8,7 +8,6 @@ service = Arkaan::Utils::MicroService.instance
   .from_location(__FILE__)
   .in_standard_mode
 
-map(service.path) { run Controllers::Repartitor.new }
+run Controllers::Repartitor
 
-# Since the service always goes off for no reason, commented for the times being.
-# at_exit { Arkaan::Utils::MicroService.instance.deactivate! }
+at_exit { Arkaan::Utils::MicroService.instance.deactivate! }

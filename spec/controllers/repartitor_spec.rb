@@ -20,7 +20,7 @@ describe Controllers::Repartitor do
   describe 'GET /url' do
     describe 'Nominal case' do
       before do
-        get '/url', {token: 'test_token', app_key: 'other_key'}
+        get '/repartitor/url', {token: 'test_token', app_key: 'other_key'}
       end
       it 'Returns a OK (200) status' do
         expect(last_response.status).to be 200
@@ -35,7 +35,7 @@ describe Controllers::Repartitor do
     describe 'Nominal case' do
       describe 'with a username' do
         before do
-          post '/messages', {token: 'test_token', app_key: 'other_key', username: 'Babausse', message: 'test', session_id: session.token}
+          post '/repartitor/messages', {token: 'test_token', app_key: 'other_key', username: 'Babausse', message: 'test', session_id: session.token}
         end
         it 'Returns a OK (200) status' do
           expect(last_response.status).to be 200
@@ -46,7 +46,7 @@ describe Controllers::Repartitor do
       end
       describe 'with an account' do
         before do
-          post '/messages', {token: 'test_token', app_key: 'other_key', account_id: account.id.to_s, message: 'test', session_id: session.token}.to_json
+          post '/repartitor/messages', {token: 'test_token', app_key: 'other_key', account_id: account.id.to_s, message: 'test', session_id: session.token}.to_json
         end
         it 'Returns a OK (200) status' do
           expect(last_response.status).to be 200
@@ -57,7 +57,7 @@ describe Controllers::Repartitor do
       end
       describe 'with a campaign' do
         before do
-          post '/messages', {token: 'test_token', app_key: 'other_key', campaign_id: campaign.id.to_s, message: 'test', session_id: session.token}.to_json
+          post '/repartitor/messages', {token: 'test_token', app_key: 'other_key', campaign_id: campaign.id.to_s, message: 'test', session_id: session.token}.to_json
         end
         it 'Returns a OK (200) status' do
           expect(last_response.status).to be 200
@@ -68,7 +68,7 @@ describe Controllers::Repartitor do
       end
       describe 'with an array of accounts' do
         before do
-          post '/messages', {token: 'test_token', app_key: 'other_key', account_ids: [account.id.to_s], message: 'test', session_id: session.token}.to_json
+          post '/repartitor/messages', {token: 'test_token', app_key: 'other_key', account_ids: [account.id.to_s], message: 'test', session_id: session.token}.to_json
         end
         it 'Returns a OK (200) status' do
           expect(last_response.status).to be 200
@@ -82,7 +82,7 @@ describe Controllers::Repartitor do
     describe '400 errors' do
       describe 'when the message is not given' do
         before do
-          post '/messages', {token: 'test_token', app_key: 'other_key', account_id: account.id.to_s, session_id: session.token}.to_json
+          post '/repartitor/messages', {token: 'test_token', app_key: 'other_key', account_id: account.id.to_s, session_id: session.token}.to_json
         end
         it 'Returns a OK (200) status' do
           expect(last_response.status).to be 400
@@ -97,7 +97,7 @@ describe Controllers::Repartitor do
       end
       describe 'when the message is given empty' do
         before do
-          post '/messages', {token: 'test_token', app_key: 'other_key', account_id: account.id.to_s, message: '', session_id: session.token}.to_json
+          post '/repartitor/messages', {token: 'test_token', app_key: 'other_key', account_id: account.id.to_s, message: '', session_id: session.token}.to_json
         end
         it 'Returns a OK (200) status' do
           expect(last_response.status).to be 400
@@ -114,7 +114,7 @@ describe Controllers::Repartitor do
       end
       describe 'when none of the IDs are given' do
         before do
-          post '/messages', {token: 'test_token', app_key: 'other_key', message: 'test', session_id: session.token}.to_json
+          post '/repartitor/messages', {token: 'test_token', app_key: 'other_key', message: 'test', session_id: session.token}.to_json
         end
         it 'Returns a OK (200) status' do
           expect(last_response.status).to be 400
@@ -134,7 +134,7 @@ describe Controllers::Repartitor do
     describe '404 errors' do
       describe 'account not found' do
         before do
-          post '/messages', {token: 'test_token', app_key: 'other_key', message: 'test_message', account_id: 'test_id', session_id: session.token}.to_json
+          post '/repartitor/messages', {token: 'test_token', app_key: 'other_key', message: 'test_message', account_id: 'test_id', session_id: session.token}.to_json
         end
         it 'Returns a Not Found (404) status' do
           expect(last_response.status).to be 404
@@ -149,7 +149,7 @@ describe Controllers::Repartitor do
       end
       describe 'either account not found' do
         before do
-          post '/messages', {token: 'test_token', app_key: 'other_key', message: 'test_message', account_ids: ['test_id', 'other_id'], session_id: session.token}.to_json
+          post '/repartitor/messages', {token: 'test_token', app_key: 'other_key', message: 'test_message', account_ids: ['test_id', 'other_id'], session_id: session.token}.to_json
         end
         it 'Returns a Not Found (404) status' do
           expect(last_response.status).to be 404
@@ -164,7 +164,7 @@ describe Controllers::Repartitor do
       end
       describe 'campaign not found' do
         before do
-          post '/messages', {token: 'test_token', app_key: 'other_key', message: 'test_message', campaign_id: 'test_id', session_id: session.token}.to_json
+          post '/repartitor/messages', {token: 'test_token', app_key: 'other_key', message: 'test_message', campaign_id: 'test_id', session_id: session.token}.to_json
         end
         it 'Returns a Not Found (404) status' do
           expect(last_response.status).to be 404
@@ -179,7 +179,7 @@ describe Controllers::Repartitor do
       end
       describe 'campaign not found' do
         before do
-          post '/messages', {token: 'test_token', app_key: 'other_key', message: 'test_message', username: 'any username', session_id: session.token}.to_json
+          post '/repartitor/messages', {token: 'test_token', app_key: 'other_key', message: 'test_message', username: 'any username', session_id: session.token}.to_json
         end
         it 'Returns a Not Found (404) status' do
           expect(last_response.status).to be 404
@@ -194,6 +194,6 @@ describe Controllers::Repartitor do
       end
     end
     
-    it_behaves_like 'a route', 'post', '/messages'
+    it_behaves_like 'a route', 'post', '/repartitor/messages'
   end
 end

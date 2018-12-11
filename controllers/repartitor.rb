@@ -8,7 +8,6 @@ module Controllers
     load_errors_from __FILE__
 
     declare_route 'get', '/url' do
-      add_body_to_params
       service = Arkaan::Monitoring::Service.where(key: 'websockets').first
       instance = service.instances.where(active: true, running: true).sample
       base_url = instance.url.gsub(/^http/, 'ws').gsub(/\/$/, '')
@@ -16,7 +15,6 @@ module Controllers
     end
 
     declare_route 'post', '/messages' do
-      add_body_to_params
       # The message have to be sent, even if the additional data are optional.
       check_presence 'message', route: 'messages'
       # A message can be sent to either : one user, several users, and all the users of a single campaign.
