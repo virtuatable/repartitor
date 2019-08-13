@@ -3,13 +3,15 @@ require 'sinatra/custom_logger'
 module Controllers
   # Controller handling the websockets, creating it and receiving the commands for it.
   # @author Vincent Courtois <courtois.vincent@outlook.com>
-  class Repartitor < Arkaan::Utils::Controller
+  class Repartitor < Arkaan::Utils::Controllers::Checked
 
     load_errors_from __FILE__
 
     configure do
       set :logger, Logger.new(STDOUT)
     end
+
+    declare_status_route
 
     declare_route 'get', '/url' do
       service = Arkaan::Monitoring::Service.where(key: 'websockets').first
