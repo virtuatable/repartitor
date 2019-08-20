@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Services
   # This singleton service manages the different instances of websockets associated to the different users.
   # @author Vincent Courtois <courtois.vincent@outlook.com>
@@ -7,20 +9,26 @@ module Services
     attr_accessor :logger
 
     def initialize
-      @logger = Logger.new(STDOUT)
+      @logger = Services::Logging.instance
     end
 
     # Forwards the message by finding if it's for a campaign, a user, or several users.
     # @param params [Hash] an object containing all the needed properties for the message to be forwarded.
     def forward_message(session, params)
-      if !params['account_id'].nil?
-        send_to_account(session, params['account_id'], params['message'], params['data'] || {})
-      elsif !params['account_ids'].nil?
-        send_to_accounts(session, params['account_ids'], params['message'], params['data'] || {})
-      elsif !params['campaign_id'].nil?
-        send_to_campaign(session, params['campaign_id'], params['message'], params['data'] || {})
-      elsif !params['username'].nil?
-        send_to_username(session, params['username'], params['message'], params['data'])
+      try_send_to_account(session, params) ||
+        try_send_to_accounts(session, params) ||
+        try_send_to_campaign(session, params) ||
+        try_send_to_username(session, params)
+    end
+
+    %w[account_id account_ids campaign_id username].each do |field|
+      method_name = "send_to_#{field.gsub(/_id/, '')}"
+      define_method "try_#{method_name}".to_sym do |session, params|
+        return false if params[field].nil?
+
+        message = params['message']
+        data = params['data'] || {}
+        send(method_name.to_sym, session, params[field], message, data)
       end
     end
 
@@ -31,13 +39,14 @@ module Services
     # @param data [Hash] a hash of additional data to send with the message.
     def send_to_sessions(session, sessions, message, data)
       service = Arkaan::Monitoring::Service.where(key: 'websockets').first
-      if !service.nil?
-        logger.info("Les sessions en mode brut sont : #{sessions.pluck(:_id).map(&:to_s).join(', ')}")
-        grouped = sessions.group_by { |session| session.websocket_id }
-        grouped.each do |websocket_id, sessions|
-          logger.info("Envoi au websocket #{websocket_id} des notifications pour #{sessions.pluck(:_id)}")
-          send_to_websocket(session, websocket_id, sessions.pluck(:_id).map(&:to_s), message, data)
-        end
+      return if service.nil?
+
+      logger.sessions(sessions)
+      grouped = sessions.group_by(&:websocket_id)
+      grouped.each do |websocket_id, tmp_sessions|
+        logger.sent_to(websocket_id, tmp_sessions)
+        session_ids = tmp_sessions.pluck(:_id).map(&:to_s)
+        send_to_websocket(session, websocket_id, session_ids, message, data)
       end
     end
 
@@ -51,15 +60,19 @@ module Services
       parameters = {
         session: session,
         url: '/websockets/messages',
-        params: {
-          session_ids: session_ids,
-          instance_id: instance_id,
-          message: message,
-          data: data
-        }
+        params: params(session_ids, instance_id, message, data)
       }
       logger.info(parameters.to_json)
       Arkaan::Factories::Gateways.random('messages').post(parameters)
+    end
+
+    def params(session_ids, instance_id, message, data)
+      {
+        session_ids: session_ids,
+        instance_id: instance_id,
+        message: message,
+        data: data
+      }
     end
 
     # Sends a message to all the connected sessions of a user so that he sees it on all its terminals.
@@ -68,7 +81,8 @@ module Services
     # @param data [Hash] a JSON-compatible hash to send as a JSON string with the message type.
     def send_to_account(session, account_id, message, data)
       account = Arkaan::Account.where(_id: account_id).first
-      raise Services::Exceptions::ItemNotFound.new('account_id') if account.nil?
+      raise Services::Exceptions::ItemNotFound, 'account_id' if account.nil?
+
       send_to_sessions(session, account.sessions, message, data)
     end
 
@@ -78,10 +92,14 @@ module Services
     # @param data [Hash] a JSON-compatible hash to send as a JSON string with the message type.
     def send_to_campaign(session, campaign_id, message, data)
       campaign = Arkaan::Campaign.where(_id: campaign_id).first
-      raise Services::Exceptions::ItemNotFound.new('campaign_id') if campaign.nil?
-      logger.info("Envoi d'un message à tous les compte de la campagne #{campaign.title}")
-      invitations = campaign.invitations.where(:enum_status.in => ['creator', 'accepted'])
-      sessions = Arkaan::Authentication::Session.where(:account_id.in => campaign.invitations.pluck(:account_id), :id.ne => session.id)
+      raise Services::Exceptions::ItemNotFound, 'campaign_id' if campaign.nil?
+
+      logger.sent_to_campaign(campaign)
+      account_ids = filter_invitations(campaign).pluck(:account_id)
+      sessions = Arkaan::Authentication::Session.where(
+        :account_id.in => account_ids,
+        :id.ne => session.id
+      )
       send_to_sessions(session, sessions, message, data)
     end
 
@@ -90,18 +108,33 @@ module Services
     # @param message [String] the type of message you want to send.
     # @param data [Hash] a JSON-compatible hash to send as a JSON string with the message type.
     def send_to_accounts(session, account_ids, message, data)
-      account_ids.each do |account_id|
-        account = Arkaan::Account.where(_id: account_id).first
-        raise Services::Exceptions::ItemNotFound.new('account_id') if account.nil?
+      if nil_account?(account_ids)
+        raise Services::Exceptions::ItemNotFound, 'account_id'
       end
-      sessions = Arkaan::Authentication::Session.where(:account_id.in => account_ids)
+
+      sessions = Arkaan::Authentication::Session.where(
+        :account_id.in => account_ids
+      )
       send_to_sessions(session, sessions, message, data)
     end
 
     def send_to_username(session, username, message, data)
       account = Arkaan::Account.where(username: username).first
-      raise Services::Exceptions::ItemNotFound.new('username') if account.nil?
+      raise Services::Exceptions::ItemNotFound, 'username' if account.nil?
+
       send_to_sessions(session, account.sessions, message, data)
+    end
+
+    def nil_account?(account_ids)
+      account_ids.any? do |account_id|
+        Arkaan::Account.where(_id: account_id).first.nil?
+      end
+    end
+
+    def filter_invitations(campaign)
+      campaign.invitations.where(
+        :enum_status.in => %w[creator accepted]
+      )
     end
   end
 end
