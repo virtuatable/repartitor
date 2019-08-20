@@ -13,7 +13,7 @@ group :development, :production, :test do
 end
 
 group :developement, :production do
-  gem 'rake'
+  gem 'rake', '12.3.3'
 end
 
 group :development, :test do
@@ -25,6 +25,8 @@ group :development, :test do
   gem 'database_cleaner'       , '1.6.1'
   gem 'bcrypt'                 , '3.1.11'
   gem 'rspec-json_expectations', '2.1.0'
-  gem 'rubocop'
-  gem 'faker'
+  gem 'rubocop'                , '0.74'
+  gem 'faker'                  , '2.1.2'
+  gem 'yard'                   , '0.9.20'
+  gem 'rspec_junit_formatter'  , '0.4.1'
 end

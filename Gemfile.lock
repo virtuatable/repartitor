@@ -142,6 +142,8 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.6.0)
     rspec-support (3.6.0)
+    rspec_junit_formatter (0.4.1)
+      rspec-core (>= 2, < 4, != 2.12.0)
     rubocop (0.74.0)
       jaro_winkler (~> 1.5.1)
       parallel (~> 1.10)
@@ -175,6 +177,7 @@ GEM
     tzinfo (1.2.5)
       thread_safe (~> 0.1)
     unicode-display_width (1.6.0)
+    yard (0.9.20)
 
 PLATFORMS
   ruby
@@ -189,16 +192,18 @@ DEPENDENCIES
   dotenv (= 2.7.2)
   draper (= 3.1.0)
   factory_girl (= 4.8.1)
-  faker
+  faker (= 2.1.2)
   mongoid (= 7.0.1)
   pry (= 0.11.1)
   rack-test (= 0.7.0)
-  rake
+  rake (= 12.3.3)
   rspec (= 3.6.0)
   rspec-json_expectations (= 2.1.0)
-  rubocop
+  rspec_junit_formatter (= 0.4.1)
+  rubocop (= 0.74)
   simplecov (= 0.15.1)
   sinatra (= 2.0.5)
+  yard (= 0.9.20)
 
 BUNDLED WITH
    1.17.2
